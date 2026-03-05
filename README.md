@@ -10,13 +10,9 @@ The code implements an analytical framework for computing polymer binding states
 
 ### vertex_calc/
 
-Core Python modules implementing the analytical theory.
-
 This folder contains reusable modules that compute polymer binding state statistics and evaluate second-, third-, and fourth-order vertex functions
 
 ### data_gen_sherlock/
-
-Scripts for large-scale phase diagram generation on high-performance computing (HPC) systems.
 
 This folder includes a copy of the vertex_calc modules (for portability in cluster jobs) and four parallelized driver scripts beginning with "multipros_phase_diag*"
 
