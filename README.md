@@ -23,7 +23,7 @@ Scripts for large-scale phase diagram generation on high-performance computing (
 
 This folder includes a copy of the vertex_calc modules (for portability in cluster jobs) and four parallelized driver scripts beginning with "multipros_phase_diag*"
 
-These scripts run parallelized parameter sweeps over thermodynamic and architectural variables to efficiently construct phase diagrams
+These scripts run parallelized parameter sweeps over thermodynamic variables to efficiently construct phase diagrams
 
 The directory also contains shell (.sh) job scripts used to run the workflows on the Stanford Sherlock cluster and templates that can be adapted to other HPC environments
 
