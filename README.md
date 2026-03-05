@@ -4,7 +4,7 @@ This repository contains the code used to generate the results and figures for t
 
 Leveraging inhomogeneous binding of incompatible constituents for adaptive copolymer self-assembly, Thomas Habte and Andrew Spakowitz, Soft Matter, 2025,21, 9018-9024 
 
-The code implements an RPA analytical framework for computing polymer binding states, evaluating vertex functions, and performing large-scale parameter sweeps to generate phase diagrams.
+The code implements an analytical framework for computing polymer binding states, evaluating vertex functions, and performing large-scale parameter sweeps to generate phase diagrams.
 
 ## Repository structure
 
