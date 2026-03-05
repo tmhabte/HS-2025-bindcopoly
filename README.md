@@ -1,4 +1,4 @@
-# Adaptive Copolymer Self-Assembly — Research Code
+# Adaptive Copolymer Self-Assembly Research Code
 
 This repository contains the code used to generate the results and figures for the paper:
 
