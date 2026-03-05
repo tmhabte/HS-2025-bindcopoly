@@ -1,7 +1,27 @@
 # from OABS_util import *
 from OABS_binding_calc import *
 
-def calc_sf2(psol, M2s, k_vec, competitive):
+def calc_sf2(psol, M2s, k_vec, competitive=True):
+    """
+    Compute the two-point structure factor S^{(2)} for a Gaussian chain
+    with reversible binding
+    
+    Parameters
+    ----------
+    psol : Polymer_soln
+        Polymer solution object containing thermodynamic and chain parameters
+    M2s : array-like
+        Reduced rank-2 monomer correlation tensor
+    k_vec : array-like
+        List of wavevectors at which S^{(2)} is evaluated
+    competitive : bool
+        If True, excludes double-bound (AB) state
+    
+    Returns
+    -------
+    S2_arr : ndarray
+        Two-point structure factor matrix including solvent contribution
+    """
     # calculates sf2 using rank 1 monomer correlation tensor 
     # [n_bind, v_int, Vol_int, e_m, rho_c, rho_s, poly_marks, M, mu_max, mu_min, del_mu, alpha, N, N_m, b] = chrom
     M = psol.M
@@ -51,6 +71,21 @@ def calc_sf2(psol, M2s, k_vec, competitive):
     return S2_arr
 
 def inc_gamma(a, x): 
+    """
+    Evaluate the upper incomplete gamma function Γ(a, x).
+    
+    Parameters
+    ----------
+    a : float
+        Shape parameter
+    x : float
+        Lower integration bound
+    
+    Returns
+    -------
+    float
+        Γ(a) * gammaincc(a, x)
+    """
     # got rid of a = 0 condition!
     return sp.special.gamma(a)*sp.special.gammaincc(a, x)
 
@@ -58,7 +93,21 @@ def erf(n):
     return sp.special.erf(n)
         
 def eval_and_reduce_sisj_bind_simp(psol, s_bnd_A, s_bnd_B):
-    # [n_bind, v_int, Vol_int, e_m, rho_c, rho_s, poly_marks, M, mu_max, mu_min, del_mu, f_om, N, N_m, b] = chrom
+    """
+    Compute and reduce dimensionality of pairwise binding correlation tensor along the chain.
+    
+    Parameters
+    ----------
+    psol : Polymer_soln
+        Polymer solution object
+    s_bnd_A, s_bnd_B : ndarray
+        Binding state arrays
+    
+    Returns
+    -------
+    sisj_tens : ndarray
+        Reduced pair correlation tensor indexed by |i - j|
+    """
 
     M = psol.M
 
@@ -71,9 +120,26 @@ def eval_and_reduce_sisj_bind_simp(psol, s_bnd_A, s_bnd_B):
 
 
 def calc_sf_mats(psol, s_bind_1_soln_arr, s_bind_2_soln_arr, k_vec, competitive):
-    # returns rank 3 tensor of mu1, mu2 , k, each value is S2 matrix
-    # Used for spinodal calculation    
-    # print(" I USING DATA TYPE " + str(DATA_TYPE))
+    """
+    Compute S^{(2)} matrices over a grid of chemical potentials and wavevectors.
+    
+    Used for spinodal analysis and phase boundary determination.
+    
+    Parameters
+    ----------
+    psol : Polymer_soln
+    s_bind_1_soln_arr, s_bind_2_soln_arr : ndarray
+        Binding state solutions over (mu1, mu2)
+    k_vec : array-like
+        Wavevectors
+    competitive : bool
+        Binding model selector
+    
+    Returns
+    -------
+    sf2_mat : ndarray (object)
+        Rank-3 tensor indexed by (mu1, mu2, k) containing S^{(2)} matrices
+    """
     phi_p = psol.phi_p
     N = psol.N
     
@@ -96,6 +162,24 @@ def calc_sf_mats(psol, s_bind_1_soln_arr, s_bind_2_soln_arr, k_vec, competitive)
     return sf2_mat
 
 def calc_sisjs(s_bind_A, s_bind_B):
+    """
+    Construct local binding state indicator fields.
+    
+    Returns occupation fields for:
+        0  : unbound
+        A  : bound to species A
+        B  : bound to species B
+        AB : doubly bound
+    
+    Parameters
+    ----------
+    s_bind_A, s_bind_B : ndarray
+    
+    Returns
+    -------
+    list of ndarray
+        [sig_0, sig_A, sig_B, sig_AB]
+    """
     sig_0 = (1-s_bind_A)*(1-s_bind_B)
     sig_A = s_bind_A * (1-s_bind_B)
     sig_B = s_bind_B * (1 - s_bind_A)
@@ -104,6 +188,21 @@ def calc_sisjs(s_bind_A, s_bind_B):
     return sisj_arr
 
 def calc_mon_mat_2(s_bind_A, s_bind_B, competitive):
+    """
+    Construct rank-2 monomer correlation tensor M^{(2)}.
+    
+    Parameters
+    ----------
+    s_bind_A, s_bind_B : ndarray
+        Binding state arrays
+    competitive : bool
+        Exclude AB state if True
+    
+    Returns
+    -------
+    M2_arr : ndarray (object)
+        Rank-2 tensor of monomer correlations
+    """
     nm = len(s_bind_A)
    
     sisj_arr =  calc_sisjs(s_bind_A, s_bind_B) #[sig_0, sig_A, sig_B, sig_AB]
@@ -130,6 +229,21 @@ def calc_mon_mat_2(s_bind_A, s_bind_B, competitive):
     return M2_arr
 
 def calc_mon_mat_3(s_bind_A, s_bind_B, competitive):
+    """
+    Construct rank-3 monomer correlation tensor M^{(3)}.
+    
+    Parameters
+    ----------
+    s_bind_A, s_bind_B : ndarray
+        Binding state arrays
+    competitive : bool
+        Exclude AB state if True
+    
+    Returns
+    -------
+    M2_arr : ndarray (object)
+        Rank-3 tensor of monomer correlations
+    """    
     nm = len(s_bind_A)
 
     sisj_arr =  calc_sisjs(s_bind_A, s_bind_B)
@@ -149,6 +263,21 @@ def calc_mon_mat_3(s_bind_A, s_bind_B, competitive):
     return M3_arr
 
 def calc_mon_mat_4(s_bind_A, s_bind_B, competitive):
+    """
+    Construct rank-4 monomer correlation tensor M^{(4)}.
+    
+    Parameters
+    ----------
+    s_bind_A, s_bind_B : ndarray
+        Binding state arrays
+    competitive : bool
+        Exclude AB state if True
+    
+    Returns
+    -------
+    M2_arr : ndarray (object)
+        Rank-4 tensor of monomer correlations
+    """
     nm = len(s_bind_A)
 
     sisj_arr =  calc_sisjs(s_bind_A, s_bind_B)
@@ -168,6 +297,26 @@ def calc_mon_mat_4(s_bind_A, s_bind_B, competitive):
 
 # ADAPTED FROM gaus_vertex_pd_mix.py
 def calc_sf3(psol, M3_arr, k_vec, k_vec_2, competitive):
+    """
+    Compute the three-point structure factor S^{(3)} for a Gaussian chain
+    with reversible binding
+    
+    Parameters
+    ----------
+    psol : Polymer_soln
+        Polymer solution object containing thermodynamic and chain parameters
+    M3s : array-like
+        Reduced rank-3 monomer correlation tensor
+    k_vec : array-like
+        List of wavevectors at which S^{(3)} is evaluated
+    competitive : bool
+        If True, excludes double-bound (AB) state
+    
+    Returns
+    -------
+    S3_arr : ndarray
+        Three-point structure factor matrix including solvent contribution
+    """
     # for a gaussian chain of M monomers, each of length N_m
     # calculates s3 matrix at a single k
         
@@ -244,6 +393,26 @@ def calc_sf3(psol, M3_arr, k_vec, k_vec_2, competitive):
 
 
 def calc_sf4(psol, M4_arr, k_vec, k_vec_2, k_vec_3, competitive):
+    """
+    Compute the four-point structure factor S^{(4)} for a Gaussian chain
+    with reversible binding
+    
+    Parameters
+    ----------
+    psol : Polymer_soln
+        Polymer solution object containing thermodynamic and chain parameters
+    M2s : array-like
+        Reduced rank-2 monomer correlation tensor
+    k_vec : array-like
+        List of wavevectors at which S^{(4)} is evaluated
+    competitive : bool
+        If True, excludes double-bound (AB) state
+    
+    Returns
+    -------
+    S4_arr : ndarray
+        Four-point structure factor matrix including solvent contribution
+    """
     # [n_bind, v_int, Vol_int, e_m, rho_c, rho_s, poly_marks, M, mu_max, mu_min, del_mu, alpha, N, N_m, b] = chrom
     M = psol.M
     N = psol.N
@@ -343,7 +512,25 @@ def calc_sf4(psol, M4_arr, k_vec, k_vec_2, k_vec_3, competitive):
 
 
 def calc_case_s3(C, xm_A, xm_B, ordered_js):
-
+    """
+    Evaluate a single contour-ordering contribution to S^{(3)}.
+    
+    Handles all degeneracies and special limits (xm_A = xm_B, xm → 0).
+    
+    Parameters
+    ----------
+    C : ndarray
+        Accumulator tensor
+    xm_A, xm_B : float
+        Dimensionless wavevector magnitudes
+    ordered_js : tuple of ndarray
+        Ordered contour indices (jmax, jmid, jmin)
+    
+    Returns
+    -------
+    C : ndarray
+        Updated accumulator tensor
+    """
     jmax, jmid, jmin = ordered_js
     
     cylindrical = False
@@ -431,7 +618,25 @@ def calc_case_s3(C, xm_A, xm_B, ordered_js):
 
 
 def calc_case_s4(C, xm_A, xm_B, xm_C, ordered_js):
-
+    """
+    Evaluate a single contour-ordering contribution to S^{(4)}.
+    
+    Handles all degeneracies and special limits.
+    
+    Parameters
+    ----------
+    C : ndarray
+        Accumulator tensor
+    xm_A, xm_B, xm_C : float
+        Dimensionless wavevector magnitudes
+    ordered_js : tuple of ndarray
+        Ordered contour indices (jmax, jmid, jmin)
+    
+    Returns
+    -------
+    C : ndarray
+        Updated accumulator tensor
+    """
     jmax, jupp, jlow, jmin = ordered_js
     
     xmA_eq_xmB = False
@@ -672,6 +877,7 @@ def calc_case_s4(C, xm_A, xm_B, xm_C, ordered_js):
                                     * integral
  
     return C
+
 
 
 
