@@ -230,8 +230,34 @@ def eval_dtenddmu(mu_a, mu_b, pa = 1, ea = 0, eb = 0, f_ref = 0):
     return dtendda, dtenddb
     
 def eval_phi(pa_vec, mu_a = 0, mu_b = 0, ea = 0, eb = 0, j_aa = 0, j_bb = 0, j_ab = 0, f_ref = 0):
+    """
+    Evaluate the average binding state for each nucleosome at a single chemical potential
     
-    nm = len(pa_vec)
+    Parameters
+    ----------
+    pa_vec : array-like
+        Host state of each averaged monomer
+    mu_a, mu_b : float
+        Guest A, B chemical potential
+    ea, eb : int
+        Binding affinity of matching guest-host interactios
+    nm2 : int
+        Number of methylated tails in the right-side nucleosome
+    nu : int
+        Indicator for nucleosomes within the interaction length
+    j_aa, j_ab, j_bb : float
+        Strength of the A-A, A-B, A-A nearest neighbor interactions
+    f_ref: float
+        Reference energy for numerical stability
+    
+    Returns
+    -------
+    tmat : 3x3 float array
+        Transfer matrix for the nucleosome    
+    
+    """
+
+    nm = len(pa_vec) # number of monomers
     phiva = np.zeros((nm, 5))
     phivb = np.zeros((nm, 5))
     phia = np.zeros((nm))
@@ -293,11 +319,24 @@ def eval_phi(pa_vec, mu_a = 0, mu_b = 0, ea = 0, eb = 0, j_aa = 0, j_bb = 0, j_a
     
 
 def calc_binding_states(psol):
+    """
+    Evaluate the average binding state for each nucleosome at each chemical potential specificed
+    
+    Parameters
+    ----------
+    psol: Polymer_soln object
+    
+    Returns
+    -------
+    s_bind_1_soln_arr, s_bind_2_soln_arr : (mu1_arr x mu2_arr x M) float array
+        Binding state of type 1, 2 at each chemical potential (mu_1, mu_2) for each averaged monomer 
+    
+    """
     # evaluate average binding state for each nucleosome at each mu1,mu2
     
     # [n_bind, v_int, Vol_int, e_m, rho_c, rho_s, poly_marks, M, mu_max, mu_min, del_mu, f_om, N, N_m, b] = chrom
 
-    [pa_vec, marks_2] = psol.poly_marks
+    [pa_vec, pb_vec] = psol.poly_marks
 
     # mu1_array = np.arange(mu_min, mu_max, del_mu)#[-5]
     # mu2_array = np.arange(mu_min, mu_max, del_mu)#[-5]
@@ -313,4 +352,5 @@ def calc_binding_states(psol):
             s_bind_1_soln_arr[i,j,:] = s_bind_ave_a
             s_bind_2_soln_arr[i,j,:] = s_bind_ave_b
     
+
     return s_bind_1_soln_arr, s_bind_2_soln_arr
