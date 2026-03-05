@@ -10,22 +10,6 @@ def calc_sf2(psol, M2s, k_vec, competitive):
     alpha = psol.alpha
     N = psol.N
 
-    # M2_AA, M2_AB, M2_BA, M2_BB, M1_cgam0, M1_cgam1, M2_cc = M2s CHANGE
-
-    # M = np.shape(M2_AA)[0]
-    # nk = len(k_vec)
-    # N = M*N_m
-    
-    # S2_AA_arr = np.zeros(nk)
-    # S2_AB_arr = np.zeros(nk)
-    # S2_BA_arr = np.zeros(nk)
-    # S2_BB_arr = np.zeros(nk)
-    
-    # S2_cgam0_arr = np.zeros(nk)
-    # S2_cgam1_arr = np.zeros(nk)
-    # S2_cc_arr = np.zeros(nk)
-
-
     if competitive:
         # explicit competitive binding- sig_AB not considered
         sig_inds = [0,1,2] # O, gamma1, gamma2
@@ -55,15 +39,6 @@ def calc_sf2(psol, M2s, k_vec, competitive):
         C[np.where((index) != 0)] += constant[np.where(index != 0)] \
                                     * integral
 
-        # S2_AA_arr[i] = np.sum((1/M**2) * C * M2_AA)
-        # S2_AB_arr[i] = np.sum((1/M**2) * C * M2_AB)
-        # S2_BA_arr[i] = np.sum((1/M**2) * C * M2_BA)
-        # S2_BB_arr[i] = np.sum((1/M**2) * C * M2_BB)
-        
-        # S2_cgam0_arr[i] = np.sum((1/M**2) * C * M1_cgam0)
-        # S2_cgam1_arr[i] = np.sum((1/M**2) * C * M1_cgam1)
-        # S2_cc_arr[i] = np.sum((1/M**2) * C * M2_cc)
-
         solvent_index = sig_inds[-1] + 1 # solvent index is always the last one
         for a1, a2 in product(sig_inds+[solvent_index], repeat=2):
             if (a1 == a2 == solvent_index): #at S^{(2)}_{SS}
@@ -74,8 +49,6 @@ def calc_sf2(psol, M2s, k_vec, competitive):
                 S2_arr[a1][a2] += np.sum((1/M**2) * M2s[a1][a2] * C)*(N**2)
     
     return S2_arr
-    # return S2_AA_arr*N**2, S2_AB_arr*N**2, S2_BA_arr*N**2, S2_BB_arr*N**2, S2_cgam0_arr*N**2, S2_cgam1_arr*N**2, S2_cc_arr*N**2
-    # return S2_AA_arr, S2_AB_arr, S2_BA_arr, S2_BB_arr, S2_cgam0_arr, S2_cgam1_arr, S2_cc_arr
 
 def inc_gamma(a, x): 
     # got rid of a = 0 condition!
@@ -96,9 +69,6 @@ def eval_and_reduce_sisj_bind_simp(psol, s_bnd_A, s_bnd_B):
     
     return sisj_tens
 
-# import psutil
-# import os
-
 
 def calc_sf_mats(psol, s_bind_1_soln_arr, s_bind_2_soln_arr, k_vec, competitive):
     # returns rank 3 tensor of mu1, mu2 , k, each value is S2 matrix
@@ -106,14 +76,6 @@ def calc_sf_mats(psol, s_bind_1_soln_arr, s_bind_2_soln_arr, k_vec, competitive)
     # print(" I USING DATA TYPE " + str(DATA_TYPE))
     phi_p = psol.phi_p
     N = psol.N
-
-#     start_time = time.time()
-    # [n_bind, v_int, Vol_int, e_m, rho_c, rho_s, poly_marks, M, mu_max, mu_min, del_mu, alpha, N, N_m, b] = chrom
-    # [marks_1, marks_2] = psolpoly_marks
-    # len_marks_1 = len(marks_1)
-    
-    # mu1_array = np.arange(mu_min, mu_max, del_mu)#[-5]
-    # mu2_array = np.arange(mu_min, mu_max, del_mu)#[-5]
     
     sf2_mat = np.zeros((len(psol.mu1_arr), len(psol.mu2_arr), len(k_vec)), dtype = "object")
     print("vm=A=1")
@@ -204,63 +166,17 @@ def calc_mon_mat_4(s_bind_A, s_bind_B, competitive):
 
     return M4_arr
 
-# def calc_mon_mat_3(s_bind_A, s_bind_B):
-#     nm = len(s_bind_A)
-#     sig_inds = [0,1,2] # polymer, gama1, gamma2
-#     M3_arr = np.zeros((len(sig_inds), len(sig_inds), len(sig_inds)), dtype= "object")
-#     for a1, a2, a3 in product(sig_inds, repeat=3):
-#         # print([a1, a2, a3])
-#         M3_arr[a1][a2][a3] = calc_single_monomer_matrix_3(s_bind_A, s_bind_B, [a1, a2, a3])
-#     return M3_arr
-
-# def calc_mon_mat_4(s_bind_A, s_bind_B):
-#     nm = len(s_bind_A)
-#     sig_inds = [0,1,2] # polymer, gama1, gamma2
-#     M4_arr = np.zeros((len(sig_inds), len(sig_inds), len(sig_inds), len(sig_inds)), dtype= "object")
-#     for a1, a2, a3, a4 in product(sig_inds, repeat=4):
-#         M4_arr[a1][a2][a3][a4] = calc_single_monomer_matrix_4(s_bind_A, s_bind_B, [a1, a2, a3, a4])
-#     return M4_arr
-
-
-# def s3wlc_zeroq3(chrom, K1):
-    # NOT needed- can just calc with k_3 = 0
-    # [n_bind, v_int, Vol_int, e_m, rho_c, rho_s, poly_marks, M, mu_max, mu_min, del_mu, alpha, N, N_m, b] = chrom
-
-    # # k1, k2, k3 = Ks
-    # s3 = np.zeros((3,3,3),dtype=type(1+1j))
-
-    # FA, FB = [0.5,0.5]#f_om
-    # print("ASSUMING FA = 0.5 in s3 0q!")
-    # # s2 = s2wlc(pset, N, FA, norm(k1))
-
-    # g1g1, g1g2, g2g1, g2g2, cg1, cg2, cc = np.array(calc_sf2_chromo_shlk(chrom, M2s, [K1]))
-    # ss = alpha#1-phi_c
-    # S2_mat = (rho_c / M) * np.array([[cc[0], 0, cg1[0], cg2[0]],\
-    #                 [0, ss, 0, 0], \
-    #                 [cg1[0], 0, g1g1[0], g1g2[0]],\
-    #                 [cg2[0], 0, g2g1[0], g2g2[0]]])
-    # k_val = [1, FA, FB]
-    # for i in [0,1,2]:
-    #     for j in [0,1,2]:
-    #         for k in[0,1,2]:
-    #             s3[i][j][k] = k_val[k] * S2_mat[i][j]
-    
-    # return s3
-
 # ADAPTED FROM gaus_vertex_pd_mix.py
 def calc_sf3(psol, M3_arr, k_vec, k_vec_2, competitive):
     # for a gaussian chain of M monomers, each of length N_m
     # calculates s3 matrix at a single k
         
-    # [n_bind, v_int, Vol_int, e_m, rho_c, rho_s, poly_marks, M, mu_max, mu_min, del_mu, alpha, N, N_m, b] = chrom
     M = psol.M
     N_m = psol.N_m
     b = psol.b
     N = psol.N
     alpha = psol.alpha
-
-    # if np.linalg.norm(k_vec[0] + k_vec_2[0]) < 1e-5:
-    #     return s3wlc_zeroq3(chrom, k_vec, 
+ 
     if competitive:
         # explicit competitive binding- sig_AB not considered
         sig_inds = [0,1,2] # O, gamma1, gamma2
@@ -756,6 +672,7 @@ def calc_case_s4(C, xm_A, xm_B, xm_C, ordered_js):
                                     * integral
  
     return C
+
 
 
 
